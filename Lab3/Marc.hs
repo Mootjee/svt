@@ -1,15 +1,11 @@
 module Marc
 where
 
-import Data.List
-import System.Random
 import Test.QuickCheck
 import Lecture3
-import Test.QuickCheck.Monadic
-import Control.Monad
-import Debug.Trace
 import Generators
 
+-- ============================================================================
 -- Exercise 1
 -- | logical contradiction
 contradiction :: Form -> Bool
@@ -58,7 +54,7 @@ exerciseOne = do
   print "equiv"
 
 -- Time spent ~3 hour
-
+-- ============================================================================
 -- Exercise 2
 
 -- A formula is equal if the formula has the same elements and the same thruth tables.
@@ -80,12 +76,66 @@ exerciseTwo = do
   quickCheck prop_Parsing
 
 -- Time spent ~1 hour
-
+-- ============================================================================
 -- Excersice 3
 -- The  task is to write a Haskell program for converting formulas into CNF.
 
--- This function is based on the nnf function in the Lecture3.hs
--- We will map all the forms against a lookup table
+-- A valid conjunctional normal form conforms to the following grammar
+-- L ::= p | ¬p
+-- D ::= L | L ∨ D
+-- C ::= D | D ∧ C
+
+cnf :: Form -> Bool
+cnf (Cnj xs) = all clause xs -- conjuction of clauses  (formA) ∧ (formB) ∧ (formC) ∧ (formD) ∧ (formE)
+cnf form = clause form || literal form -- it is a clause: p ∨ a or literal p, ¬p
+
+clause :: Form -> Bool
+clause (Dsj xs) = all literal xs -- disjunction of literals  p ∨ ¬p ∨ q ∨ ¬q
+clause form = literal form -- it must be a literal p, ¬p
+
+literal :: Form -> Bool
+literal (Prop _) = True -- p
+literal (Neg (Prop _)) = True -- ¬p
+literal _ = False -- it is not a literal
+
+-- This function doesn't work correctly, there is a problem with convertToCNF (Dsj xs) = Dsj (map convertToCNF xs)
+-- and convertToCNF (Cnj xs) = Cnj (map convertToCNF xs), we needed more time for this to fix this
+
 convertToCNF :: Form -> Form
-convertToCNF form | (Impl subformA subformB ) == form = form
-                  | otherwise = form
+convertToCNF (Prop a) = Prop a -- Nothing to do
+convertToCNF (Neg (Prop a)) = Neg (Prop a) -- Nothing to do
+convertToCNF (Neg (Neg subform)) = convertToCNF subform -- P ≡ ¬¬P (law of double negation)
+convertToCNF (Dsj xs) = Dsj (map convertToCNF xs) -- P ∨ (Q ∧ R) ≡ (P ∨ Q) ∧ (P ∨ R) (distribution laws)
+convertToCNF (Cnj xs) = Cnj (map convertToCNF xs) -- P ∧ (Q ∨ R) ≡ (P ∧ Q) ∨ (P ∧ R) (distribution laws)
+convertToCNF (Neg (Cnj subform)) = convertToCNF (Dsj (map (convertToCNF . Neg) subform)) -- ¬(P ∧ Q) ≡ ¬P ∨ ¬Q (DeMorgan laws).
+convertToCNF (Neg (Dsj subform)) = convertToCNF (Cnj (map (convertToCNF . Neg) subform)) -- ¬(P ∨ Q) ≡ ¬P ∧ ¬Q (DeMorgan laws).
+convertToCNF (Impl subformA subformB) = convertToCNF (arrowfree (Impl subformA subformB)) -- (P ⇒ Q) ≡ ¬P ∨ Q, ¬(P ⇒ Q) ≡ P ∧ ¬Q
+convertToCNF (Equiv subformA subformB) = convertToCNF (arrowfree (Equiv subformA subformB))
+convertToCNF form = form -- Nothing to do
+
+-- This is a simple function (less fancy) to construct a formula to conjunctional normal form. It is created because the fancy one didn't work
+-- To give an equivalent for ϕ in CNF, all you have to do is list the conjuctions of the rows in the truth
+-- table where the formula turns out False. This is similiar to what we did in workshop 3 but then for CNJ.
+constructCNF :: Form -> Form
+constructCNF form | tautology form = Dsj [Neg (Prop 1), Prop 1]  -- easy edge case :)
+                  | otherwise = Cnj cnfForm where  -- Construct a conjuction of disjunctions
+                      falseOutcomes = filter (\val -> not ( evl val form)) (allVals form) -- Get all the false outcomse
+                      cnfForm = map constructClause falseOutcomes -- Construct all the disjunctions
+
+constructClause :: Valuation -> Form
+constructClause xs = Dsj (map constructLiteral xs) -- Construct disjunctions of literals
+
+constructLiteral :: (Name,Bool) -> Form
+constructLiteral value = if snd value then Neg (Prop (fst value)) else Prop (fst value) -- Simple literal construction
+
+-- QuickCheck property
+prop_No_Tautology_CNF :: Form -> Property
+prop_No_Tautology_CNF form =
+  not (tautology form) ==> -- We don't want to check a tautology
+    cnf (constructCNF form) && [evl value (constructCNF form) | value <- allVals (constructCNF form)] == [evl value form | value <- allVals form] -- Check if it is in cnf and the thruth tables are the same
+
+exerciseThree = do
+  print "Excersice Three"
+  quickCheck prop_No_Tautology_CNF
+
+-- Time spent ~6 hour
