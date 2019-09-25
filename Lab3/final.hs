@@ -227,15 +227,19 @@ nsub f@(Equiv f1 f2) = nsub f1 + nsub f2
 
 -- Run with ghci :load finals
 -- exerciseFive
+
+-- ============================================================================
 exerciseFive = do
   print "Excersice Five"
   quickCheck prop_sub
 
+-- ============================================================================
+-- Excersice 6
+-- *** Failed! Falsified (after 6 tests):
+-- (4<=>8)
+
 type Clause  = [Int]
 type Clauses = [Clause]
-
--- Clauses should be read disjunctively, and clause lists conjunctively.
--- So 5 represents the atom p5, −5 represents the literal ¬p5, the clause [5,−6] represents p5∨¬p6, and the clause list [[4],[5,−6]] represents the formula p4∧(p5∨¬p6).
 
 cnf2cls :: Form -> Clauses
 cnf2cls (Prop x) = [[x]]
@@ -243,11 +247,37 @@ cnf2cls (Neg (Prop x)) = [[negate x]]
 cnf2cls (Cnj x) = makeListFromProps x
 cnf2cls (Dsj x) = makeListFromProps x
 
-makeListFromProps x = concat (map cnf2cls x)
+makeListFromProps x = concat [cnf2cls a | a <- x]
 
 -- The number of Prop's should be the same in the form and in the cls
 
 countPropsCls :: Clauses -> Int
-countPropsCls c
- | null c = 0
- | otherwise = length (concat c)
+countPropsCls c | null c = 0
+                | otherwise = length (concat c)
+
+sumOfProps x = sum [countPropsCls a | a <- x]
+
+testLength :: Int -> Int -> Bool
+testLength x y
+  | x == y = True
+  | otherwise = False
+
+-- To test this we can give
+-- testLength (countPropsForm <Form>) (countPropsCls (cnf2cls <Form>))
+
+-- p4∧(p5∨¬p6) does this work?
+testForm = convertToCNF(Cnj [(Prop 4), (Dsj [(Prop 5), (Neg(Prop 6))])])
+-- Gives True.
+
+-- We can check with quickCheck, using our generator arbForm,
+-- converting those to CNF and applyting them to this converter.
+
+prop_Cnf2Cls :: Form -> Property
+prop_Cnf2Cls form =
+  not (tautology form) ==>
+    countLiterals form == countPropsCls (cnf2cls (convertToCNF form))
+
+exerciseSix = do
+  print "Excersice Six"
+  quickCheck prop_Cnf2Cls
+-- 180 minutes
