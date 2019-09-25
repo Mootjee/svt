@@ -8,6 +8,22 @@ import SetOrd
 
 -- ============================================================================
 -- Exercise 1
+-- Result
+-- "Excersice One"
+-- "Contradiction"
+-- *(1 -1)
+-- True
+-- +++ OK, passed 100 tests.
+-- "Tautology"
+-- +(1 -1)
+-- True
+-- *** Gave up! Passed only 28 tests; 1000 discarded tests.
+-- "Entails"
+-- *(1 2)
+-- +(1 2)
+-- True
+-- "equiv"
+
 -- | logical contradiction
 contradiction :: Form -> Bool
 contradiction form = not (and [evl x form | x <- allVals form])
@@ -38,6 +54,8 @@ entails formA formB = all (\values -> if evl values formA then evl values formB 
 equiv  :: Form -> Form -> Bool
 equiv formA formB = all (\values -> evl values formA == evl values formB) (genVals(propNames form1 ++ propNames form2))
 
+-- Run with ghci :load finals
+-- exerciseOne
 exerciseOne = do
   print "Excersice One"
   print "Contradiction"
@@ -58,6 +76,15 @@ exerciseOne = do
 -- ============================================================================
 -- Exercise 2
 
+-- Result
+-- "Excersice Two"
+-- "Formula to parse"
+-- "*(1 2)"
+-- "Parsed formula must be equeal to original formula and have the same truth table"
+-- True
+-- "QuickCheck implementation"
+-- +++ OK, passed 100 tests; 2 discarded.
+
 -- A formula is equal if the formula has the same elements and the same thruth tables.
 -- Thruth is here an extra check, because the property names could be diffent and we want to test that.
 
@@ -67,6 +94,8 @@ prop_Parsing form =
   satisfiable form ==>  -- We check if atleast the formula is satisfiable, so we know that contradiction formulas will not be tested
     (head(parse(show form)) == form) && ([evl value form | value <- allVals form ] == [evl value (head(parse (show form)))| value <- allVals (head(parse (show form)))])
 
+-- Run with ghci :load finals
+-- exerciseTwo
 exerciseTwo = do
   print "Excersice Two"
   print "Formula to parse"
@@ -79,6 +108,11 @@ exerciseTwo = do
 -- Time spent ~1 hour
 -- ============================================================================
 -- Excersice 3
+
+-- Result
+-- "Excersice Three"
+-- +++ OK, passed 100 tests; 3 discarded.
+
 -- The  task is to write a Haskell program for converting formulas into CNF.
 
 -- A valid conjunctional normal form conforms to the following grammar
@@ -135,6 +169,8 @@ prop_No_Tautology_CNF form =
   not (tautology form) ==> -- We don't want to check a tautology
     cnf (constructCNF form) && [evl value (constructCNF form) | value <- allVals (constructCNF form)] == [evl value form | value <- allVals form] -- Check if it is in cnf and the thruth tables are the same
 
+-- Run with ghci :load finals
+-- exerciseThree
 exerciseThree = do
   print "Excersice Three"
   quickCheck prop_No_Tautology_CNF
@@ -147,6 +183,12 @@ exerciseThree = do
 -- test cases of all the excersices
 -- ============================================================================
 -- Excersice 5
+
+-- Result
+-- The test failed, probably because our test is not correct
+-- *** Failed! Falsified (after 30 tests):
+-- *(+(--*(2 9) -*(7 -7)) *(+(9 +(7 (4<=>5))) 5))
+
 
 sub :: Form -> Set Form
 sub (Prop x) = Set [Prop x]
@@ -183,8 +225,10 @@ nsub f@(Dsj [f1,f2]) =  nsub f1 + nsub f2
 nsub f@(Impl f1 f2) = nsub f1 + nsub f2
 nsub f@(Equiv f1 f2) = nsub f1 + nsub f2
 
-excersice5 = do
-  print "Excersice Four"
+-- Run with ghci :load finals
+-- exerciseFive
+exerciseFive = do
+  print "Excersice Five"
   quickCheck prop_sub
 
 type Clause  = [Int]
