@@ -199,4 +199,5 @@ exerciseSix = do
 -- =============================================================================
 
 -- There is a difference between the symmetric closure of the transitive closure of a relation R and the transitive closure of the symmetric closure of R.
--- If we give symClos a random input [(0,0),(0,1),(1,0),(1,1)] and we give the same random input to trClos they return different values.
+-- If we give trClos symClos x a random input [(0,1)] and we give the same random input to trClos symClos x they return different values.
+-- trClos sysCol x returns [(0,0),(0,1),(1,0),(1,1)] while symClos trClos x returns [(0,1),(1,0)]
