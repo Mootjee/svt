@@ -7,7 +7,7 @@ import Test.QuickCheck
 
 
 -- =============================================================================
--- EXERSICE 2
+-- EXERCISE 2
 -- =============================================================================
 -- RESULTS
 -- =============================================================================
@@ -19,7 +19,7 @@ setIntersection (Set xs) setY = Set [x |x <- xs, inSet x setY]
 
 
 -- =============================================================================
--- EXERSICE 3
+-- EXERCISE 3
 -- =============================================================================
 -- RESULTS
 
@@ -51,7 +51,7 @@ exerciseThree = do
 -- =============================================================================
 
 -- =============================================================================
--- EXERSICE 4
+-- EXERCISE 4
 -- =============================================================================
 -- RESULTS
 -- =============================================================================
@@ -121,7 +121,7 @@ exerciseFour = do
 
 
 -- =============================================================================
--- EXERSICE 5
+-- EXERCISE 5
 -- =============================================================================
 -- RESULTS
 -- =============================================================================
@@ -165,7 +165,7 @@ exerciseFive = do
 
 
 -- =============================================================================
--- EXERSICE 6
+-- EXERCISE 6
 -- =============================================================================
 -- RESULTS
 -- =============================================================================
@@ -193,3 +193,35 @@ exerciseSix = do
     quickCheck (checkSymmetry :: Rel Int -> Bool)
     print "QuickCheck for trClos function"
     quickCheck (checkTransitivity :: Rel Int -> Bool)
+-- =============================================================================
+
+
+-- =============================================================================
+-- EXERCISE 7
+-- =============================================================================
+-- RESULTS
+-- =============================================================================
+-- IMPLEMENTATION
+-- Is there a difference between the symmetric closure of the transitive
+-- closure of a relation R and the transitive closure of the symmetric
+-- closure of R ?
+
+testComparison :: (Ord a) => Rel a -> Bool
+testComparison xs = symClos(trClos xs) == trClos (symClos xs)
+
+-- There is a difference between the symmetric closure of the transitive closure of a relation R
+-- and the transitive closure of the symmetric closure of R.
+-- If we give symClos a random input and we give the same random input to
+-- trClos they return different values.
+
+-- E.g [(0,1)]
+
+-- symmetry = [(0,1), (1,0)]
+-- transitive = [(0,0), (0,1), (1,0), (1,1)]
+
+-- transitive = [(0,1)]
+-- symmetry = [(0,1), (1,0)]
+exerciseSeven = do
+  putStrLn "Exercise 7"
+  putStrLn "QuickCheck implementation"
+  quickCheck (testComparison :: Rel Int -> Bool)
