@@ -5,36 +5,22 @@ import Data.List
 import Lecture4
 import Test.QuickCheck
 
-
--- =============================================================================
--- EXERCISE 2
--- =============================================================================
--- RESULTS
--- =============================================================================
--- IMPLEMENTATION
-
-setIntersection :: (Ord a) => Set a -> Set a -> Set a
-setIntersection (Set xs) setY = Set [x |x <- xs, inSet x setY]
--- =============================================================================
-
-
 -- =============================================================================
 -- EXERCISE 3
 -- =============================================================================
 -- RESULTS
 
 -- *Main> exerciseThree
--- "Applying Symmetric closure on list"
--- [(1,2),(2,3),(3,4)]
--- "Result:"
--- [(1,2),(2,1),(2,3),(3,2),(3,4),(4,3)]
+-- Input [(1,2),(2,3),(3,4)]
+-- Correct output [(1,2),(2,1),(2,3),(3,2),(3,4),(4,3)]
+-- Result: [(1,2),(2,1),(2,3),(3,2),(3,4),(4,3)]
+
 -- =============================================================================
 -- IMPLEMENTATION
 
-
 -- Symmetric closure => symmetry:  ∀x(xRy ⇒ yRx)
-
 -- if for all x, y ∈ A: if xRy then yRx.
+
 type Rel a = [(a,a)]
 
 symClos :: Ord a => Rel a -> Rel a
@@ -43,19 +29,34 @@ symClos :: Ord a => Rel a -> Rel a
 symClos xs = sort (xs ++ sort[swap x | x <- xs, notElem (swap x) xs])
 
 exerciseThree = do
-  print "exercise Three "
-  print "Applying Symmetric closure on list"
-  print [(1,2),(2,3),(3,4)]
-  print "Result:"
-  print (symClos [(1,2),(2,3),(3,4)])
+  let exampleOne = [(1,2),(2,3),(3,4)]
+  let resultOne = [(1,2),(2,1),(2,3),(3,2),(3,4),(4,3)]
+  putStrLn $ "Input " ++ show exampleOne
+  putStrLn $ "Correct output " ++ show resultOne
+  putStrLn $ "Result: " ++ show (symClos exampleOne)
 -- =============================================================================
+-- TIME SPENT ~ 2 hour
+-- =============================================================================
+
 
 -- =============================================================================
 -- EXERCISE 4
 -- =============================================================================
 -- RESULTS
+
+-- *Main> exerciseFour
+-- relation A: [(1,2),(2,3),(3,1)]
+-- in domain: [1,2,3]
+-- isSerial?: True
+-- relation B: [(1,2),(2,3)]
+-- in domain: [1,2,3]
+-- isSerial?: False
+-- relation B: [(1,2),(2,3),(3,1)]
+-- in domain: [3,4,5,6]
+-- isSerial?: False
+-- *** Gave up! Passed only 0 tests; 1000 discarded tests.
+
 -- =============================================================================
--- IMPLEMENTATION
 -- serial => Linear: ∀x(x ∈ A)∃(y ∈ A) -> xRy
 
 -- if for all x ∈ A: if x ∈ A ∃ y ∈ A then xRy
@@ -97,26 +98,24 @@ prop_isSerialCheck xs ys = length xs > 2 && length ys > 2
 -- order to make a valid case of x = y (mode n)
 
 exerciseFour = do
-  print "relation A"
-  print [(1,2), (2,3), (3,1)]
-  print "in domain"
-  print [1,2,3]
-  print "isSerial?"
-  print (isSerial [1,2,3] [(1,2), (2,3), (3,1)])
-  print "relation B"
-  print [(1,2), (2,3)]
-  print "in domain"
-  print [1,2,3]
-  print "isSerial?"
-  print (isSerial [1,2,3] [(1,2), (2,3)])
-  print "relation C"
-  print [(1,2), (2,3), (3,1)]
-  print "in domain"
-  print [3,4,5,6]
-  print "isSerial?"
-  print (isSerial [3,4,5,6] [(1,2), (2,3), (3,1)])
-  print "quickCheck test"
+  let relationA = [(1,2), (2,3), (3,1)]
+  let domainA = [1,2,3]
+  putStrLn $ "relation A: " ++ show relationA
+  putStrLn $ "in domain: " ++ show domainA
+  putStrLn $ "isSerial?: " ++ show (isSerial domainA relationA)
+  let relationB = [(1,2), (2,3)]
+  let domainB = [1,2,3]
+  putStrLn $ "relation B: " ++ show relationB
+  putStrLn $ "in domain: " ++ show domainB
+  putStrLn $ "isSerial?: " ++ show (isSerial domainB relationB)
+  let relationC = [(1,2), (2,3), (3,1)]
+  let domainC = [3,4,5,6]
+  putStrLn $ "relation B: " ++ show relationC
+  putStrLn $ "in domain: " ++ show domainC
+  putStrLn $ "isSerial?: " ++ show (isSerial domainC relationC)
   quickCheck prop_isSerialCheck
+-- =============================================================================
+-- TIME SPENT ~ 5 hour
 -- =============================================================================
 
 
@@ -124,6 +123,19 @@ exerciseFour = do
 -- EXERCISE 5
 -- =============================================================================
 -- RESULTS
+
+-- *Main> exerciseFive
+-- Example from exercise 6
+-- input [(1,2),(2,3),(3,4)]
+-- output [(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)]
+-- Result: True
+-- input [(1,1),(2,2),(3,3),(4,4)]
+-- output [(1,1),(2,2),(3,3),(4,4)]
+-- Result: True
+-- input [(1,2),(2,1),(2,3),(3,2)]
+-- output [(1,1),(1,2),(1,3),(2,1),(2,2),(2,3),(3,1),(3,2),(3,3)]
+-- Result: True
+
 -- =============================================================================
 -- IMPLEMENTATION
 -- Use the datatype for relations from the previous exercise, plus
@@ -162,12 +174,21 @@ exerciseFive = do
     putStrLn $ "output " ++ show resultThree
     putStrLn $ "Result: " ++ show (trClos exampleThree == resultThree)
 -- =============================================================================
+-- TIME SPENT ~ 4 hour
+-- =============================================================================
 
 
 -- =============================================================================
 -- EXERCISE 6
 -- =============================================================================
 -- RESULTS
+
+-- *Main> exerciseSix
+-- "QuickCheck for symClos function"
+-- +++ OK, passed 100 tests.
+-- "QuickCheck for trClos function"
+-- +++ OK, passed 100 tests.
+
 -- =============================================================================
 -- IMPLEMENTATION
 -- Test the functions symClos and trClos from the previous exercises.
@@ -194,12 +215,21 @@ exerciseSix = do
     print "QuickCheck for trClos function"
     quickCheck (checkTransitivity :: Rel Int -> Bool)
 -- =============================================================================
+-- TIME SPENT ~ 4 hour
+-- =============================================================================
 
 
 -- =============================================================================
 -- EXERCISE 7
 -- =============================================================================
 -- RESULTS
+
+-- *Main> exerciseSeven
+-- Exercise 7
+-- QuickCheck implementation
+-- *** Failed! Falsified (after 2 tests and 1 shrink):
+-- [(0,1)]
+
 -- =============================================================================
 -- IMPLEMENTATION
 -- Is there a difference between the symmetric closure of the transitive
@@ -225,4 +255,6 @@ exerciseSeven = do
   putStrLn "Exercise 7"
   putStrLn "QuickCheck implementation"
   quickCheck (testComparison :: Rel Int -> Bool)
+-- =============================================================================
+-- TIME SPENT ~ 1 hour
 -- =============================================================================
